@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⭐ Telegram Stars Game</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+
+  :root {
+    --gold: #FFD700;
+    --gold2: #FFA500;
+    --dark: #0a0a1a;
+    --card: #111130;
+    --card2: #1a1a40;
+    --blue: #4FC3F7;
+    --purple: #9B59B6;
+    --green: #2ECC71;
+    --glow: 0 0 20px rgba(255,215,0,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    font-family: 'Exo 2', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(ellipse at 20% 20%, rgba(75,0,130,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,100,200,0.15) 0%, transparent 50%);
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 24px 16px 8px;
+    position: relative;
+  }
+  .header h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(20px, 5vw, 32px);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--gold2), #fff);
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+    text-shadow: none;
+  }
+  .header p { color: #aaa; font-size: 13px; margin-top: 4px; }
+
+  /* BALANCE BAR */
+  .balance-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    padding: 16px;
+    background: var(--card);
+    border-bottom: 1px solid rgba(255,215,0,0.1);
+    flex-wrap: wrap;
+  }
+  .bal-item { text-align: center; }
+  .bal-item .val {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: var(--glow);
+  }
+  .bal-item .lbl { font-size: 11px; color: #888; margin-top: 2px; }
+  .divider { width: 1px; height: 40px; background: rgba(255,255,255,0.1); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--card);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    overflow-x: auto;
+  }
+  .tab {
+    flex: 1;
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    white-space: nowrap;
+    min-width: 80px;
+  }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab:hover { color: #ccc; }
+  .tab .t-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+
+  /* SCREENS */
+  .screen { display: none; padding: 16px; }
+  .screen.active { display: block; }
+
+  /* CLICKER GAME */
+  .click-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+  }
+  .star-btn {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    background: radial-gradient(circle at 40% 35%, #fff9a0, #FFD700 40%, #FF8C00 80%, #8B4513);
+    cursor: pointer;
+    font-size: 70px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 40px rgba(255,215,0,0.5), inset 0 0 30px rgba(255,255,255,0.2);
+    transition: transform 0.08s, box-shadow 0.08s;
+    position: relative;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .star-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 0 20px rgba(255,215,0,0.3);
+  }
+  .star-btn.clicked {
+    animation: pulse 0.15s ease;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+
+  .tap-hint { color: #666; font-size: 12px; margin-top: 12px; }
+  .per-tap {
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: var(--gold);
+    margin-top: 8px;
+  }
+
+  /* ENERGY BAR */
+  .energy-wrap { width: 100%; max-width: 320px; margin-top: 16px; }
+  .energy-label { display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 6px; }
+  .energy-bar-bg {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    height: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .energy-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00b4db, #0083b0);
+    border-radius: 10px;
+    transition: width 0.3s;
+  }
+
+  /* FLOATING +1 */
+  .float-text {
+    position: fixed;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 9999;
+    text-shadow: 0 0 10px rgba(255,215,0,0.8);
+    animation: floatUp 1s forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1.4); }
+  }
+
+  /* UPGRADES */
+  .upgrades-grid { display: flex; flex-direction: column; gap: 10px; }
+  .upgrade-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .upgrade-card:hover { border-color: rgba(255,215,0,0.3); background: var(--card2); }
+  .upgrade-card.affordable { border-color: rgba(255,215,0,0.5); }
+  .upgrade-card.maxed { opacity: 0.5; cursor: default; }
+  .upg-icon { font-size: 32px; min-width: 40px; text-align: center; }
+  .upg-info { flex: 1; }
+  .upg-name { font-weight: 600; font-size: 14px; }
+  .upg-desc { font-size: 11px; color: #888; margin-top: 2px; }
+  .upg-level { font-size: 11px; color: var(--blue); margin-top: 3px; }
+  .upg-cost {
+    text-align: right;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .upg-cost .c-icon { font-size: 16px; }
+
+  /* LEADERBOARD */
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--card);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .lb-rank { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; min-width: 28px; }
+  .lb-rank.gold { color: #FFD700; }
+  .lb-rank.silver { color: #C0C0C0; }
+  .lb-rank.bronze { color: #CD7F32; }
+  .lb-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .lb-name { flex: 1; font-weight: 600; font-size: 14px; }
+  .lb-score { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--gold); }
+  .lb-me { border-color: rgba(255,215,0,0.4) !important; background: rgba(255,215,0,0.05) !important; }
+
+  /* TOP UP SHOP */
+  .shop-title {
+    text-align: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(255,215,0,0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255,215,0,0.1);
+  }
+  .packages-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .pkg-card {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .pkg-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 8px 24px rgba(255,215,0,0.15); }
+  .pkg-card.hot { border-color: var(--gold2); }
+  .hot-badge {
+    position: absolute;
+    top: 8px; right: -18px;
+    background: linear-gradient(135deg, #FF6B35, #FF0080);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 24px;
+    transform: rotate(45deg);
+    color: white;
+    letter-spacing: 1px;
+  }
+  .pkg-label { font-size: 10px; color: #888; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .pkg-stars { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900; color: var(--gold); }
+  .pkg-stars-icon { font-size: 20px; }
+  .pkg-bonus { font-size: 11px; color: var(--green); margin: 4px 0; min-height: 16px; }
+  .pkg-price {
+    margin-top: 10px;
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--gold);
+    display: inline-block;
+  }
+
+  .buy-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #FFD700, #FF8C00);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(255,165,0,0.3);
+    transition: all 0.2s;
+    margin-bottom: 12px;
+  }
+  .buy-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,165,0,0.5); }
+  .buy-btn:active { transform: scale(0.98); }
+
+  /* DONATE */
+  .donate-section {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 16px;
+  }
+  .donate-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+  .donate-sub { font-size: 12px; color: #888; margin-bottom: 16px; }
+  .amount-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .amt-btn {
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Exo 2', sans-serif;
+    transition: all 0.2s;
+  }
+  .amt-btn.active, .amt-btn:hover { background: rgba(255,215,0,0.15); border-color: var(--gold); color: var(--gold); }
+  .donate-input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .donate-input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #fff;
+    font-size: 16px;
+    font-family: 'Orbitron', monospace;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .donate-input:focus { border-color: var(--gold); }
+  .tg-icon { font-size: 28px; }
+  .donate-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #2196F3, #0D47A1);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(33,150,243,0.3);
+  }
+  .donate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(33,150,243,0.5); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #151530;
+    border-radius: 20px;
+    padding: 28px 24px;
+    max-width: 360px;
+    width: 100%;
+    border: 1px solid rgba(255,215,0,0.2);
+    text-align: center;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-icon { font-size: 60px; margin-bottom: 12px; }
+  .modal h2 { font-family: 'Orbitron', monospace; font-size: 18px; margin-bottom: 8px; }
+  .modal p { color: #aaa; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  .modal-stars { font-family: 'Orbitron', monospace; font-size: 32px; color: var(--gold); margin: 12px 0; }
+  .modal-close {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border: none; border-radius: 12px;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700; font-size: 14px;
+    color: #000; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { transform: scale(1.05); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30,30,60,0.95);
+    border: 1px solid rgba(255,215,0,0.3);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 13px;
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* SECTION HEADER */
+  .sec-header {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    color: #666;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+  }
+  .stat-card .sv { font-family: 'Orbitron', monospace; font-size: 18px; color: var(--gold); }
+  .stat-card .sl { font-size: 11px; color: #666; margin-top: 3px; }
+
+  .auto-earn {
+    text-align: center;
+    font-size: 12px;
+    color: #4FC3F7;
+    margin-top: 6px;
+    height: 18px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>⭐ STAR EMPIRE</h1>
+  <p>Telegram Stars bilan o'yna, yig'ib ket!</p>
+</div>
+
+<!-- BALANCE BAR -->
+<div class="balance-bar">
+  <div class="bal-item">
+    <div class="val" id="balStars">0</div>
+    <div class="lbl">⭐ Yulduzlar</div>
+  </div>
+  <div class="divider"></div>
+  <div class="bal-item">
+    <div class="val" id="balTotal">0</div>
+    <div class="lbl">📊 Jami</div>
+  </div>
+  <div class="divider"></div>
+  <div class="bal-item">
+    <div class="val" id="balPerSec">0/s</div>
+    <div class="lbl">⚡ Avto</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('game')">
+    <span class="t-icon">⭐</span>O'yin
+  </div>
+  <div class="tab" onclick="switchTab('upgrades')">
+    <span class="t-icon">⬆️</span>Upgrade
+  </div>
+  <div class="tab" onclick="switchTab('topup')">
+    <span class="t-icon">💎</span>Top Up
+  </div>
+  <div class="tab" onclick="switchTab('donate')">
+    <span class="t-icon">🎁</span>Donate
+  </div>
+  <div class="tab" onclick="switchTab('leaderboard')">
+    <span class="t-icon">🏆</span>Top
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen active" id="screen-game">
+  <div class="click-area">
+    <div class="star-btn" id="starBtn" onclick="handleClick(event)">⭐</div>
+    <div class="tap-hint">Bosib yulduz yig'!</div>
+    <div class="per-tap" id="perTapLabel">+1 ⭐ har bosishda</div>
+    <div class="auto-earn" id="autoEarnLabel"></div>
+
+    <div class="energy-wrap">
+      <div class="energy-label">
+        <span>⚡ Energiya</span>
+        <span id="energyLabel">500 / 500</span>
+      </div>
+      <div class="energy-bar-bg">
+        <div class="energy-bar-fill" id="energyFill" style="width:100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="sv" id="statClicks">0</div>
+      <div class="sl">Jami bosishlar</div>
+    </div>
+    <div class="stat-card">
+      <div class="sv" id="statLevel">1</div>
+      <div class="sl">Daraja</div>
+    </div>
+    <div class="stat-card">
+      <div class="sv" id="statPerClick">1</div>
+      <div class="sl">⭐ / Bosish</div>
+    </div>
+    <div class="stat-card">
+      <div class="sv" id="statAutoPerSec">0</div>
+      <div class="sl">⭐ / Sekund</div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADES SCREEN -->
+<div class="screen" id="screen-upgrades">
+  <div class="sec-header">⬆️ Upgradlar</div>
+  <div class="upgrades-grid" id="upgradesGrid"></div>
+</div>
+
+<!-- TOP UP SCREEN -->
+<div class="screen" id="screen-topup">
+  <div class="shop-title">
+    💎 Telegram Stars — Rasmiy Top Up<br>
+    <span style="font-size:11px;color:#666">Quyidagi paketlardan birini tanlang</span>
+  </div>
+
+  <div class="packages-grid" id="packagesGrid"></div>
+
+  <div class="donate-section" style="text-align:center;">
+    <div class="donate-title">🚀 Telegram orqali to'lash</div>
+    <div class="donate-sub">Xavfsiz va tez — Telegram Stars protokoli orqali</div>
+    <button class="buy-btn" onclick="openTgStars()">
+      ⭐ Telegram Stars Sotib Ol
+    </button>
+    <p style="font-size:11px;color:#555">Telegram ilovasida davom etadi</p>
+  </div>
+</div>
+
+<!-- DONATE SCREEN -->
+<div class="screen" id="screen-donate">
+  <div class="donate-section">
+    <div class="donate-title">🎁 Do'stga Yulduz Yuborish</div>
+    <div class="donate-sub">Username kiriting va yubormoqchi bo'lgan miqdorni tanlang</div>
+
+    <div class="donate-input-row">
+      <span class="tg-icon">👤</span>
+      <input class="donate-input" type="text" id="donateUser" placeholder="@username" style="font-family:'Exo 2',sans-serif;font-size:14px;">
+    </div>
+
+    <div style="font-size:12px;color:#888;margin-bottom:8px;">Miqdor tanlang:</div>
+    <div class="amount-btns" id="amountBtns">
+      <button class="amt-btn" onclick="selectAmt(this,25)">25 ⭐</button>
+      <button class="amt-btn" onclick="selectAmt(this,50)">50 ⭐</button>
+      <button class="amt-btn" onclick="selectAmt(this,100)">100 ⭐</button>
+      <button class="amt-btn" onclick="selectAmt(this,250)">250 ⭐</button>
+      <button class="amt-btn active" onclick="selectAmt(this,500)">500 ⭐</button>
+      <button class="amt-btn" onclick="selectAmt(this,1000)">1000 ⭐</button>
+    </div>
+
+    <div class="donate-input-row" style="margin-top:8px;">
+      <span class="tg-icon">⭐</span>
+      <input class="donate-input" type="number" id="donateAmount" value="500" placeholder="Miqdor" min="1">
+    </div>
+
+    <button class="donate-btn" onclick="sendDonate()">
+      <span>📤</span> Yulduz Yuborish
+    </button>
+  </div>
+
+  <div class="donate-section">
+    <div class="donate-title">📜 Oxirgi Donatlar</div>
+    <div id="donateHistory" style="font-size:13px;color:#666;text-align:center;padding:10px 0;">
+      Hali hech qanday donate yo'q
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD SCREEN -->
+<div class="screen" id="screen-leaderboard">
+  <div class="sec-header">🏆 Eng Yaxshi O'yinchilar</div>
+  <div id="lbList"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon" id="mIcon">🎉</div>
+    <h2 id="mTitle">Tabriklaymiz!</h2>
+    <p id="mDesc">Siz yulduz yig'dingiz!</p>
+    <div class="modal-stars" id="mStars"></div>
+    <button class="modal-close" onclick="closeModal()">YOPISH</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== STATE ======
+let state = {
+  stars: 0,
+  totalEarned: 0,
+  clicks: 0,
+  perClick: 1,
+  autoPerSec: 0,
+  energy: 500,
+  maxEnergy: 500,
+  level: 1,
+  upgrades: {},
+  donateHistory: [],
+  selectedPkg: null
+};
+
+const UPGRADES_DATA = [
+  { id:'u1', name:'Ajaib Qo\'l', desc:'Har bosishda +2 ⭐', icon:'✋', baseCost:50,  perClickBonus:2, autoBonus:0 },
+  { id:'u2', name:'Robot Yordamchi', desc:'Sekundiga +1 ⭐ avto', icon:'🤖', baseCost:100, perClickBonus:0, autoBonus:1 },
+  { id:'u3', name:'Yulduz Zavodi', desc:'Sekundiga +5 ⭐ avto', icon:'🏭', baseCost:400, perClickBonus:0, autoBonus:5 },
+  { id:'u4', name:'Super Barmoq', desc:'Har bosishda +10 ⭐', icon:'💪', baseCost:800, perClickBonus:10, autoBonus:0 },
+  { id:'u5', name:'Kvant Miner', desc:'Sekundiga +20 ⭐ avto', icon:'⚡', baseCost:2000, perClickBonus:0, autoBonus:20 },
+  { id:'u6', name:'Galaktika Skaneri', desc:'Har bosishda +50 ⭐', icon:'🔭', baseCost:5000, perClickBonus:50, autoBonus:0 },
+  { id:'u7', name:'Kosmik Reaktor', desc:'Sekundiga +100 ⭐', icon:'🚀', baseCost:12000, perClickBonus:0, autoBonus:100 },
+  { id:'u8', name:'Parallel Olam', desc:'Hamma narsani x2', icon:'🌌', baseCost:30000, perClickBonus:0, autoBonus:0, multiplier:true },
+];
+
+const PACKAGES_DATA = [
+  { id:'p1', stars:50, price:'0.99$', bonus:0, label:'Starter', hot:false },
+  { id:'p2', stars:150, price:'2.49$', bonus:10, label:'Mashhur', hot:true },
+  { id:'p3', stars:500, price:'6.99$', bonus:50, label:'Pro', hot:false },
+  { id:'p4', stars:1500, price:'17.99$', bonus:200, label:'Elite', hot:false },
+];
+
+const LEADERBOARD = [
+  { name:'StarKing', score:98420, emoji:'👑' },
+  { name:'NightOwl', score:72100, emoji:'🦉' },
+  { name:'GalaxyStar', score:61800, emoji:'🌟' },
+  { name:'ProClicker', score:45300, emoji:'⚡' },
+  { name:'UzbekChamp', score:38900, emoji:'🇺🇿' },
+  { name:'TelegramFan', score:31200, emoji:'📱' },
+  { name:'StarMiner', score:22400, emoji:'⛏️' },
+  { name:'ClickMaster', score:15600, emoji:'🎯' },
+];
+
+let selectedDonateAmt = 500;
+let autoInterval;
+let energyRegen;
+
+// ====== INIT ======
+function init() {
+  const saved = localStorage.getItem('starEmpireState');
+  if (saved) try { Object.assign(state, JSON.parse(saved)); } catch(e) {}
+  renderUpgrades();
+  renderPackages();
+  renderLeaderboard();
+  updateUI();
+  startAuto();
+  startEnergyRegen();
+  updateUpgradeStats();
+}
+
+function save() {
+  localStorage.setItem('starEmpireState', JSON.stringify(state));
+}
+
+// ====== TAB ======
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const ids = ['game','upgrades','topup','donate','leaderboard'];
+    t.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if (id === 'leaderboard') updateLeaderboard();
+}
+
+// ====== CLICK ======
+function handleClick(e) {
+  if (state.energy <= 0) { showToast('⚡ Energiya tugadi! Kuting...'); return; }
+  
+  state.energy = Math.max(0, state.energy - 1);
+  state.stars += state.perClick;
+  state.totalEarned += state.perClick;
+  state.clicks++;
+  
+  // Level up check
+  checkLevel();
+  
+  // Float text
+  const ft = document.createElement('div');
+  ft.className = 'float-text';
+  ft.textContent = `+${state.perClick}⭐`;
+  ft.style.left = (e.clientX - 20) + 'px';
+  ft.style.top = (e.clientY - 20) + 'px';
+  document.body.appendChild(ft);
+  setTimeout(() => ft.remove(), 1000);
+
+  // Btn animation
+  const btn = document.getElementById('starBtn');
+  btn.classList.remove('clicked');
+  void btn.offsetWidth;
+  btn.classList.add('clicked');
+
+  updateUI();
+  save();
+}
+
+function checkLevel() {
+  const thresholds = [0,100,500,2000,8000,25000,100000,500000];
+  for (let i = thresholds.length-1; i >= 1; i--) {
+    if (state.totalEarned >= thresholds[i] && state.level < i+1) {
+      state.level = i+1;
+      showModal('🎊', `Daraja ${state.level}!`, `Tabriklaymiz! Siz yangi darajaga yetdingiz!`, `⭐ ${fmt(state.totalEarned)}`);
+    }
+  }
+}
+
+// ====== AUTO ======
+function startAuto() {
+  clearInterval(autoInterval);
+  autoInterval = setInterval(() => {
+    if (state.autoPerSec > 0) {
+      state.stars += state.autoPerSec;
+      state.totalEarned += state.autoPerSec;
+      checkLevel();
+      updateUI();
+    }
+  }, 1000);
+}
+
+function startEnergyRegen() {
+  clearInterval(energyRegen);
+  energyRegen = setInterval(() => {
+    if (state.energy < state.maxEnergy) {
+      state.energy = Math.min(state.maxEnergy, state.energy + 1);
+      updateEnergyUI();
+    }
+  }, 2000);
+}
+
+// ====== UPGRADES ======
+function getUpgradeCost(upg) {
+  const level = state.upgrades[upg.id] || 0;
+  if (upg.multiplier && level >= 1) return Infinity;
+  return Math.floor(upg.baseCost * Math.pow(2, level));
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES_DATA.find(u => u.id === id);
+  if (!upg) return;
+  const cost = getUpgradeCost(upg);
+  if (state.stars < cost || cost === Infinity) return;
+  
+  state.stars -= cost;
+  state.upgrades[id] = (state.upgrades[id] || 0) + 1;
+  
+  updateUpgradeStats();
+  renderUpgrades();
+  updateUI();
+  showToast(`✅ ${upg.name} upgrade qilindi!`);
+  save();
+}
+
+function updateUpgradeStats() {
+  let pc = 1, aps = 0;
+  let hasMultiplier = state.upgrades['u8'] >= 1;
+  
+  UPGRADES_DATA.forEach(upg => {
+    const lvl = state.upgrades[upg.id] || 0;
+    if (lvl > 0 && !upg.multiplier) {
+      pc += upg.perClickBonus * lvl;
+      aps += upg.autoBonus * lvl;
+    }
+  });
+  
+  if (hasMultiplier) { pc *= 2; aps *= 2; }
+  state.perClick = pc;
+  state.autoPerSec = aps;
+}
+
+function renderUpgrades() {
+  const grid = document.getElementById('upgradesGrid');
+  grid.innerHTML = UPGRADES_DATA.map(upg => {
+    const lvl = state.upgrades[upg.id] || 0;
+    const cost = getUpgradeCost(upg);
+    const maxed = cost === Infinity;
+    const affordable = state.stars >= cost && !maxed;
+    return `<div class="upgrade-card ${affordable?'affordable':''} ${maxed?'maxed':''}" onclick="buyUpgrade('${upg.id}')">
+      <div class="upg-icon">${upg.icon}</div>
+      <div class="upg-info">
+        <div class="upg-name">${upg.name}</div>
+        <div class="upg-desc">${upg.desc}</div>
+        <div class="upg-level">Daraja: ${lvl}${maxed?' (MAX)':''}</div>
+      </div>
+      <div class="upg-cost">
+        ${maxed ? '<span style="color:#4FC3F7">MAX</span>' : `<span class="c-icon">⭐</span><br>${fmt(cost)}`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ====== PACKAGES ======
+function renderPackages() {
+  const grid = document.getElementById('packagesGrid');
+  grid.innerHTML = PACKAGES_DATA.map(pkg => `
+    <div class="pkg-card ${pkg.hot?'hot':''}" onclick="selectPackage('${pkg.id}')">
+      ${pkg.hot ? '<div class="hot-badge">HOT</div>' : ''}
+      <div class="pkg-label">${pkg.label}</div>
+      <div class="pkg-stars"><span class="pkg-stars-icon">⭐</span> ${pkg.stars}</div>
+      <div class="pkg-bonus">${pkg.bonus > 0 ? `+${pkg.bonus} BONUS!` : ' '}</div>
+      <div class="pkg-price">${pkg.price}</div>
+    </div>
+  `).join('');
+}
+
+function selectPackage(id) {
+  const pkg = PACKAGES_DATA.find(p => p.id === id);
+  if (!pkg) return;
+  const total = pkg.stars + pkg.bonus;
+  showModal('🛒', `${pkg.label} Paketi`, `Siz ${pkg.price} to'lab ${total} ta ⭐ Telegram Stars olmoqchisiz.`, `⭐ ${total} Stars`);
+  state.selectedPkg = id;
+}
+
+function openTgStars() {
+  showToast('📱 Telegram ilovasi ochilmoqda...');
+  setTimeout(() => { window.open('https://t.me', '_blank'); }, 800);
+}
+
+// ====== DONATE ======
+function selectAmt(btn, amt) {
+  document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDonateAmt = amt;
+  document.getElementById('donateAmount').value = amt;
+}
+
+function sendDonate() {
+  const user = document.getElementById('donateUser').value.trim();
+  const amt = parseInt(document.getElementById('donateAmount').value) || 0;
+  
+  if (!user) { showToast('⚠️ Username kiriting!'); return; }
+  if (amt <= 0) { showToast('⚠️ Miqdor kiriting!'); return; }
+  if (state.stars < amt) { showToast(`⭐ Yetarli yulduz yo'q! Sizda ${fmt(state.stars)} bor`); return; }
+  
+  state.stars -= amt;
+  const entry = { user: user.startsWith('@')?user:'@'+user, amt, time: new Date().toLocaleTimeString() };
+  state.donateHistory.unshift(entry);
+  if (state.donateHistory.length > 10) state.donateHistory.pop();
+  
+  renderDonateHistory();
+  updateUI();
+  showModal('🎁', 'Yuborildi!', `${entry.user} ga muvaffaqiyatli yubordingiz!`, `⭐ ${fmt(amt)} Stars`);
+  document.getElementById('donateUser').value = '';
+  save();
+}
+
+function renderDonateHistory() {
+  const el = document.getElementById('donateHistory');
+  if (state.donateHistory.length === 0) {
+    el.innerHTML = '<div style="color:#555;text-align:center;padding:10px">Hali hech qanday donate yo\'q</div>';
+    return;
+  }
+  el.innerHTML = state.donateHistory.map(d => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <span>${d.user}</span>
+      <span style="color:var(--gold)">⭐ ${fmt(d.amt)}</span>
+      <span style="color:#555;font-size:11px">${d.time}</span>
+    </div>
+  `).join('');
+}
+
+// ====== LEADERBOARD ======
+function renderLeaderboard() {
+  const myScore = state.totalEarned;
+  const allPlayers = [...LEADERBOARD, { name:'Sen (Siz)', score:myScore, emoji:'😊', isMe:true }]
+    .sort((a,b) => b.score - a.score);
+  
+  const list = document.getElementById('lbList');
+  list.innerHTML = allPlayers.map((p, i) => {
+    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const rankSymbol = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+    return `<div class="lb-row ${p.isMe?'lb-me':''}">
+      <div class="lb-rank ${rankClass}">${rankSymbol}</div>
+      <div class="lb-avatar">${p.emoji}</div>
+      <div class="lb-name">${p.name}${p.isMe?' 👈':''}</div>
+      <div class="lb-score">⭐ ${fmt(p.score)}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateLeaderboard() { renderLeaderboard(); }
+
+// ====== UI UPDATE ======
+function updateUI() {
+  document.getElementById('balStars').textContent = fmt(Math.floor(state.stars));
+  document.getElementById('balTotal').textContent = fmt(Math.floor(state.totalEarned));
+  document.getElementById('balPerSec').textContent = state.autoPerSec + '/s';
+  document.getElementById('statClicks').textContent = fmt(state.clicks);
+  document.getElementById('statLevel').textContent = state.level;
+  document.getElementById('statPerClick').textContent = state.perClick;
+  document.getElementById('statAutoPerSec').textContent = state.autoPerSec;
+  document.getElementById('perTapLabel').textContent = `+${state.perClick} ⭐ har bosishda`;
+  if (state.autoPerSec > 0) {
+    document.getElementById('autoEarnLabel').textContent = `🤖 +${state.autoPerSec} ⭐/s avto ishlayapti`;
+  }
+  updateEnergyUI();
+  renderUpgrades();
+}
+
+function updateEnergyUI() {
+  const pct = (state.energy / state.maxEnergy * 100).toFixed(0);
+  document.getElementById('energyFill').style.width = pct + '%';
+  document.getElementById('energyLabel').textContent = `${state.energy} / ${state.maxEnergy}`;
+}
+
+// ====== MODAL ======
+function showModal(icon, title, desc, stars='') {
+  document.getElementById('mIcon').textContent = icon;
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mDesc').textContent = desc;
+  document.getElementById('mStars').textContent = stars;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// ====== TOAST ======
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ====== FORMAT ======
+function fmt(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toString();
+}
+
+init();
+</script>
+</body>
+</html>
